@@ -4,11 +4,20 @@ import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import Chart from "react-apexcharts";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  Tooltip,
+  
+} from "recharts";
+import { Button } from "@mui/material";
 
 
 function Weather() {
-  const [city, setCity] = useState("Bhagalpur");
-  const [region, setRegion] = useState("");
+  const [city, setCity] = useState("Patna");
+  const [area, setArea] = useState("");
   const [days, setDays] = useState([]);
   const [tempgraph, setTempgraph] = useState("");
   const [tempicon, setTempicon] = useState("");
@@ -16,13 +25,15 @@ function Weather() {
   const [sunset, setSunset] = useState("");
   const [pressure, setPressure] = useState("");
   const [humidity, setHumidity] = useState("");
-  const [spinner, setSpinner] = useState(true);
+  const [loading, setLoading] = useState(true);
   let waiting;
   const hourTempArray = useRef([]);
 
   // ....fetch the weather city....
-  const searchCity = () => {
-    try {
+
+
+  const FindCity = () => {
+    
       axios
         .get(
           `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=44d2f0f421a5b483b38e2ea12704107e&units=metric`
@@ -33,10 +44,10 @@ function Weather() {
         .catch((err) => {
           console.log(err);
         });
-    } catch (error) {}
+  
   };
   const weekday = (lat, lon) => {
-    try {
+   
       axios
         .get(
           `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&appid=44d2f0f421a5b483b38e2ea12704107e&units=metric`
@@ -47,10 +58,11 @@ function Weather() {
         .catch((err) => {
           console.log(err);
         });
-    } catch {}
+  
   };
   useEffect(() => {
-    searchCity();
+    FindCity()
+       
   }, []);
 
 
@@ -59,7 +71,7 @@ function Weather() {
       .get(" https://ipinfo.io/json?token=52ed0181817dc8")
       .then((response) => {
         setCity(response.data.city);
-        setRegion(response.data.region);
+        setArea(response.data.area);
         axios
           .get(
             `https://api.openweathermap.org/data/2.5/weather?q=${response.data.city}&appid=44d2f0f421a5b483b38e2ea12704107e&units=metric`
@@ -133,16 +145,59 @@ function Weather() {
 
   useEffect(() => {
     takeLocation();
-    setTimeout(() => setSpinner(false), 1000);
+    setTimeout(() => setLoading(false), 1000);
   }, []);
+
+  
+  
+
+
+  const sunData = [
+    {
+      sun: `${sunrise || "6:00"}am<:${new Date(
+        sunrise
+      ).getMinutes()} am`,
+      value: 0,
+    },
+    { sun: "", value: 10 },
+    {
+      sun: `${sunset || "7:00"}pm:${new Date(
+        sunset
+      ).getMinutes()} pm`,
+      value: 0,
+    },
+  ];
+  const Sungraph = ({ active, label }) => {
+    if (active) {
+      return (
+        <div>
+          {label.slice(-2) === "am" ? (
+            <div className="sun-graph">
+              <strong>Sunrise</strong>
+              <p>{sunrise || "6:00"}am</p>
+            </div>
+          ) : label.slice(-2) === "pm" ? (
+            <div className="sun-graph">
+              <strong>Sunset</strong>
+              <p>{sunset || "7:00"}pm</p>
+            </div>
+          ) : (
+            ""
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
  
-  return spinner ? (
-    <div className="spinner">
-    Loding
+ 
+  return loading ? (
+    <div className="load">
+    Loding waiting for update !
     </div>
   ) : (
     <div className="display">
-      <div className="searchbar">
+      <div className="search">
         <button className="location">
           <LocationOnIcon />
         </button>
@@ -157,7 +212,7 @@ function Weather() {
             
           }}
         />
-        <button className="searchIcon" onClick={searchCity}>
+        <button className="searchIcon" onClick={FindCity}>
           <SearchOutlinedIcon fontSize="medium" style={{marginRight:"170px"}}/>
         </button>
       </div>
@@ -174,7 +229,7 @@ function Weather() {
                 e.sunset,
                 e.pressure,
                 e.humidity,
-                
+                e
               );
             }}
             tabIndex="1"
@@ -203,61 +258,100 @@ function Weather() {
 
       <div className="tempChart">
         <div className="tempChartTemp">
-          <span>{Math.ceil(tempgraph)}℃</span>
+          <span>{Math.round(tempgraph)}℃</span>
+         
+         
           <img
             className="tempIcon"
-            src={`https://openweathermap.org/img/wn/${tempicon || "10d"}.png`}
+            src={`https://openweathermap.org/img/wn/${tempicon}.png`}
             alt=""
           />
+         
         </div>
         <Chart
-          type="area"
+          type="line"
           series={[
             {
-              name: "Temperature",
+              
               data: [...hourTempArray.current],
             },
           ]}
           options={{
             dataLabels: {
-              formatter: (val) => {
+              formatter: (item) => {
               },
             },
             yaxis: {
               labels: {
-                formatter: (val) => {
-                  return `${Math.ceil(val)}℃`;
+                formatter: (item) => {
+                  return `${Math.ceil(item)}℃`;
                 },
               },
             },
+            
             xaxis: {
-              categories: ["12:00am", "6:00am", "12:00pm", "6:00pm"],
+              categories: ["6:00am", "9:00am", "12:00pm", "3:00pm", "6:00pm"],
             },
           }}
         />
 
-        <div className="PressureHumidity">
+
+
+        <div className="middata">
           <div>
-            <div className="pressure">Pressure</div>
-            <div>{pressure || 1210} hpa</div>
+            <div className="set">Pressure</div>
+            <div>{pressure} hpa</div>
           </div>
           <div>
-            <div className="humidity">Humidity</div>
-            <div>{humidity || 43} %</div>
+            <div className="set">Humidity</div>
+            <div>{humidity} %</div>
+          </div>
+          
+        </div>
+        <div className="middata">
+          <div>
+            <div className="set">Sunrise</div>
+            <div>{sunrise}am</div>
+          </div>
+          <div>
+            <div className="set">Sunset</div>
+            <div>{sunset}pm</div>
           </div>
         </div>
-        <div className="sunriseSunset">
+        <ResponsiveContainer width="100%" height={160}>
+              <AreaChart data={sunData}>
+                
+                <XAxis
+                  dataKey="sun"
+                  padding={{ left: 50, right: 50 }}
+                  tickLine={false}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#dc5349"
+                  fillOpacity={1}
+                  fill="url(#sun-color)"
+                />
+
+                <Tooltip content={<Sungraph />} />
+              </AreaChart>
+              
+            </ResponsiveContainer>
+            <div className="sunriseSunset">
           <div>
-            <div className="sunrise">Sunrise</div>
+           
             <div>{sunrise || "6:00"}am</div>
           </div>
           <div>
-            <div className="sunset">Sunset</div>
+            
             <div>{sunset || "7:00"}pm</div>
           </div>
         </div>
       </div>
      
+
+      
     </div>
   );
 }
