@@ -12,16 +12,23 @@
  color: rgb(206, 133, 24);
 }
 
+.sun-graph{
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+   padding: 5px 12px;
+   border-radius: 5px;
+   font-size: 14px;
+}
 
-
-.display{
+.displays{
  
     width: 500px;
     margin: auto;
+   height: 940px;
     background-color: white;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
     border-radius: 10px;
-    margin-top: 30px;
+    margin-top: 20px;
+   
    }
   
   .search{
@@ -33,7 +40,7 @@
   .input{
       width: 85%;
      margin-top: 10px;
-      height: 50px;
+      height: 40px;
       padding: 0px 40px;
       font-size: 16px;
       font-weight: 600;
@@ -59,7 +66,7 @@
    margin-top: 17px;
   }
   #detail {
-      height: 160px;
+      height: 150px;
      
       margin: auto;
       display: flex;
@@ -86,8 +93,8 @@
       border-radius: 10px;
     }
     .tempChart{
-      padding: 10px;
-      padding-top: 20px;
+      /* padding: 10px; */
+      /* padding-top: 20px; */
       width: 90%;
       box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
       margin: auto;
@@ -113,10 +120,19 @@
       width: 95%;
       height: 60px;
       margin: auto;
-      margin-top: 20px;
+      margin-top: 10px;
       display: flex;
       justify-content: space-between;
      
+    }
+    .lastdata{
+      width: 95%;
+      height: 20px;
+      margin: auto;
+      margin-top: -40px;
+     
+      display: flex;
+      justify-content: space-between;
     }
    
    

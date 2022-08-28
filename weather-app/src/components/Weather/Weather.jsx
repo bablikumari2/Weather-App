@@ -1,6 +1,8 @@
 import "./Weather.css"
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+
+
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import Chart from "react-apexcharts";
@@ -12,13 +14,14 @@ import {
   Tooltip,
   
 } from "recharts";
-import { Button } from "@mui/material";
+
 
 
 function Weather() {
   const [city, setCity] = useState("Patna");
   const [area, setArea] = useState("");
   const [days, setDays] = useState([]);
+  
   const [tempgraph, setTempgraph] = useState("");
   const [tempicon, setTempicon] = useState("");
   const [sunrise, setSunrise] = useState("");
@@ -36,7 +39,7 @@ function Weather() {
     
       axios
         .get(
-          `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=44d2f0f421a5b483b38e2ea12704107e&units=metric`
+          `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=0f95bf2cdc2b5c87c680a1e9231923e8&units=metric`
         )
         .then((res) => {
           weekday(res.data.coord.lat, res.data.coord.lon);
@@ -50,7 +53,7 @@ function Weather() {
    
       axios
         .get(
-          `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&appid=44d2f0f421a5b483b38e2ea12704107e&units=metric`
+          `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&appid=0f95bf2cdc2b5c87c680a1e9231923e8&units=metric`
         )
         .then((res) => {
           setDays(res.data.daily);
@@ -66,7 +69,7 @@ function Weather() {
   }, []);
 
 
-  const takeLocation = () => {
+  const Live = () => {
     axios
       .get(" https://ipinfo.io/json?token=52ed0181817dc8")
       .then((response) => {
@@ -74,7 +77,7 @@ function Weather() {
         setArea(response.data.area);
         axios
           .get(
-            `https://api.openweathermap.org/data/2.5/weather?q=${response.data.city}&appid=44d2f0f421a5b483b38e2ea12704107e&units=metric`
+            `https://api.openweathermap.org/data/2.5/weather?q=${response.data.city}&appid=0f95bf2cdc2b5c87c680a1e9231923e8&units=metric`
           )
           .then((res) => {
             console.log(res.data, "onlocation");
@@ -94,7 +97,7 @@ function Weather() {
               }
             }
             arr = arr.splice(0, 4);
-            detailDiv(
+            info(
               res.data.main.temp,
               res.data.weather[0].icon,
               res.data.sys.sunrise,
@@ -109,21 +112,21 @@ function Weather() {
           });
       })
 
-      .catch((status) => {
-        console.log("Request failed.  Returned status of", status);
+      .catch((error) => {
+        console.log("something wrong", error);
       });
   };
   
   
 
-  const detailDiv = (data1, data2, sunRise, sunSet, presure, humdity, e) => {
+  const info = (graph, icon, sunRise, sunSet, presure, humdity, e) => {
     console.log(e, "checking one day data");
     let arr = [];
     let hrRise = new Date(sunRise * 1000).getHours();
     let minRise = "0" + new Date(sunRise * 1000).getMinutes();
     let hrSet = new Date(sunSet * 1000).getHours();
     let minSet = "0" + new Date(sunSet * 1000).getMinutes();
-    let rise = hrRise + ":" + minRise.substr(-2);
+    let rise = (hrRise % 12)  + ":" + minRise.substr(-2);
     let set = (hrSet % 12) + ":" + minSet.substr(-2);
     let result = Array.isArray(e);
     if (result == false) {
@@ -135,8 +138,8 @@ function Weather() {
     } else {
       hourTempArray.current = e;
     }
-    setTempgraph(data1);
-    setTempicon(data2);
+    setTempgraph(graph);
+    setTempicon(icon);
     setSunrise(rise);
     setSunset(set);
     setPressure(presure);
@@ -144,7 +147,7 @@ function Weather() {
   };
 
   useEffect(() => {
-    takeLocation();
+    Live();
     setTimeout(() => setLoading(false), 1000);
   }, []);
 
@@ -154,14 +157,14 @@ function Weather() {
 
   const sunData = [
     {
-      sun: `${sunrise || "6:00"}am<:${new Date(
+      sun: `${sunrise}am<:${new Date(
         sunrise
       ).getMinutes()} am`,
       value: 0,
     },
     { sun: "", value: 10 },
     {
-      sun: `${sunset || "7:00"}pm:${new Date(
+      sun: `${sunset}pm:${new Date(
         sunset
       ).getMinutes()} pm`,
       value: 0,
@@ -174,12 +177,12 @@ function Weather() {
           {label.slice(-2) === "am" ? (
             <div className="sun-graph">
               <strong>Sunrise</strong>
-              <p>{sunrise || "6:00"}am</p>
+              <p>{sunrise}am</p>
             </div>
           ) : label.slice(-2) === "pm" ? (
             <div className="sun-graph">
               <strong>Sunset</strong>
-              <p>{sunset || "7:00"}pm</p>
+              <p>{sunset}pm</p>
             </div>
           ) : (
             ""
@@ -189,14 +192,18 @@ function Weather() {
     }
     return null;
   };
+  
  
+  
+
+  
  
   return loading ? (
     <div className="load">
     Loding waiting for update !
     </div>
   ) : (
-    <div className="display">
+    <div className="displays">
       <div className="search">
         <button className="location">
           <LocationOnIcon />
@@ -222,7 +229,7 @@ function Weather() {
             id="detailInsideDiv"
             key={e.id}
             onClick={() => {
-              detailDiv(
+              info(
                 e.temp.day,
                 e.weather[0].icon,
                 e.sunrise,
@@ -322,7 +329,7 @@ function Weather() {
               <AreaChart data={sunData}>
                 
                 <XAxis
-                  dataKey="sun"
+                  dataKey="suns"
                   padding={{ left: 50, right: 50 }}
                   tickLine={false}
                 />
@@ -338,14 +345,14 @@ function Weather() {
               </AreaChart>
               
             </ResponsiveContainer>
-            <div className="sunriseSunset">
+            <div className="lastdata">
           <div>
            
-            <div>{sunrise || "6:00"}am</div>
+            <div>{sunrise}am</div>
           </div>
           <div>
             
-            <div>{sunset || "7:00"}pm</div>
+            <div>{sunset}pm</div>
           </div>
         </div>
       </div>
